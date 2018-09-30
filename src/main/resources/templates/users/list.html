@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout">
+<head>
+	<title>Users : View all</title>
+	<link rel="stylesheet" th:href="@{/css/bootstrap.min.css}" href="../../css/bootstrap.min.css" />
+</head>
+<body>
+<div class="container">
+	<div class="navbar">
+		<div class="navbar-inner">
+			<a class="brand" th:href="@{/}"> Home </a>
+			<ul class="nav">
+				<li><a th:href="@{/}" href="users.html"> Users </a></li>
+			</ul>
+		</div>
+	</div>
+
+    <h1 layout:fragment="header">Users : View all</h1>
+    <div layout:fragment="content" class="container">
+        <div class="pull-right">
+            <a href="form.html" th:href="@{/(form)}">Create User</a>
+        </div>
+        <table class="table table-bordered table-striped">
+            <thead>
+            <tr>
+                <td>ID</td>
+                <td>Username</td>
+                <td>Created</td>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:if="${users.empty}">
+                <td colspan="3">No users</td>
+            </tr>
+            <tr th:each="user : ${users}">
+                <td><a href="view.html" th:href="@{'/' + ${user.id}}" th:text="${user.id}"> Username </a></td>
+                <td th:text="${user.username}" th:href="view.html"></td>
+                <td th:text="${#calendars.format(user.created)}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+</body>
+</html>
