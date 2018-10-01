@@ -1,6 +1,7 @@
 package com.agharibi.springsecurity.web.controller;
 
 import com.agharibi.springsecurity.persistence.UserRepository;
+import com.agharibi.springsecurity.utils.PasswordEncoderUtil;
 import com.agharibi.springsecurity.web.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -16,6 +17,9 @@ public class RegistrationController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private PasswordEncoderUtil util;
+
     @RequestMapping(value = "signup")
     public ModelAndView  registrationForm() {
         return new ModelAndView("registrationPage", "user", new User());
@@ -27,6 +31,9 @@ public class RegistrationController {
         if(result.hasErrors()) {
             return new ModelAndView("registrationPage", "user", user);
         }
+
+        user.setPassword(util.encode(user.getPassword()));
+        user.setPasswordConfirmation(util.encode(user.getPasswordConfirmation()));
 
         userRepository.save(user);
         return new ModelAndView("redirect:/login");

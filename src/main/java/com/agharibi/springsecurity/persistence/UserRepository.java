@@ -1,14 +1,14 @@
 package com.agharibi.springsecurity.persistence;
 
 import com.agharibi.springsecurity.web.model.User;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface UserRepository {
+public interface UserRepository extends JpaRepository<User, Long> {
 
-    Iterable<User> findAll();
+    /**
+     * @param email
+     * @return
+     */
+    User findByEmail(String email);
 
-    User save(User user);
-
-    User findUser(Long id);
-
-    void deleteUser(Long id);
 }

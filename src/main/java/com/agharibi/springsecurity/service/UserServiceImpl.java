@@ -23,8 +23,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private boolean emailExist(String email) {
-//        final User user = userRepository.findByEmail(email);
-//        return user != null;
-        return false;
+        final User user = userRepository.findByEmail(email);
+        return user != null;
     }
 }
