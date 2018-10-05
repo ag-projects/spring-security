@@ -29,10 +29,6 @@ public class User {
 
     private Calendar created = Calendar.getInstance();
 
-
-    @OneToOne
-    private VerificationToken verificationToken;
-
     public User() {
         super();
         this.enabled = false;
@@ -86,11 +82,13 @@ public class User {
         this.created = created;
     }
 
-    public VerificationToken getVerificationToken() {
-        return verificationToken;
+    @Override
+    public int hashCode() {
+        return super.hashCode();
     }
 
-    public void setVerificationToken(VerificationToken verificationToken) {
-        this.verificationToken = verificationToken;
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
     }
 }
