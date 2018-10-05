@@ -1,4 +1,4 @@
-package com.agharibi.springsecurity.web.model;
+package com.agharibi.springsecurity.model;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -24,7 +24,19 @@ public class User {
     @NotEmpty(message = "Password confirmation is required.")
     private String passwordConfirmation;
 
+    @Column
+    private Boolean enabled;
+
     private Calendar created = Calendar.getInstance();
+
+
+    @OneToOne
+    private VerificationToken verificationToken;
+
+    public User() {
+        super();
+        this.enabled = false;
+    }
 
     public Long getId() {
         return id;
@@ -58,6 +70,14 @@ public class User {
         this.passwordConfirmation = passwordConfirmation;
     }
 
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
+    }
+
     public Calendar getCreated() {
         return created;
     }
@@ -66,14 +86,11 @@ public class User {
         this.created = created;
     }
 
-    @Override
-    public String toString() {
-        return "User{" +
-                "id=" + id +
-                ", email='" + email + '\'' +
-                ", password='" + password + '\'' +
-                ", passwordConfirmation='" + passwordConfirmation + '\'' +
-                ", created=" + created +
-                '}';
+    public VerificationToken getVerificationToken() {
+        return verificationToken;
+    }
+
+    public void setVerificationToken(VerificationToken verificationToken) {
+        this.verificationToken = verificationToken;
     }
 }

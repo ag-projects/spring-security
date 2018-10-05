@@ -1,7 +1,7 @@
 package com.agharibi.springsecurity.service;
 
+import com.agharibi.springsecurity.model.User;
 import com.agharibi.springsecurity.persistence.UserRepository;
-import com.agharibi.springsecurity.web.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

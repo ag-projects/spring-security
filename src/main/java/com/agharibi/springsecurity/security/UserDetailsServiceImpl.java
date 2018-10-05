@@ -1,7 +1,8 @@
 package com.agharibi.springsecurity.security;
 
+import com.agharibi.springsecurity.model.User;
 import com.agharibi.springsecurity.persistence.UserRepository;
-import com.agharibi.springsecurity.web.model.User;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
