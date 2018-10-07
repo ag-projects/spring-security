@@ -40,7 +40,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         "/forgotPassword*",
                         "/user/resetPassword*",
                         "/user/changePassword*",
-                        "/user/savePassword*").permitAll()
+                        "/user/savePassword*",
+                        "/js/**").permitAll()
                 .anyRequest().authenticated()
 
                 .and()

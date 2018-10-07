@@ -1,13 +1,12 @@
 package com.agharibi.springsecurity.web.controller;
 
-import com.agharibi.springsecurity.model.PasswordResetToken;
-import com.agharibi.springsecurity.model.User;
-import com.agharibi.springsecurity.model.VerificationToken;
+import com.agharibi.springsecurity.model.*;
+import com.agharibi.springsecurity.persistence.SecurityQuestionDefinitionRepository;
+import com.agharibi.springsecurity.persistence.SecurityQuestionRepository;
 import com.agharibi.springsecurity.registration.OnRegistrationCompleteEvent;
 import com.agharibi.springsecurity.security.UserDetailsServiceImpl;
 import com.agharibi.springsecurity.service.UserService;
 import com.agharibi.springsecurity.utils.PasswordEncoderUtil;
-import com.google.common.collect.ImmutableMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.mail.SimpleMailMessage;
@@ -28,8 +27,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import java.util.Calendar;
-import java.util.UUID;
+import java.util.*;
 
 @Controller
 public class RegistrationController {
@@ -49,9 +47,21 @@ public class RegistrationController {
     @Autowired
     private UserDetailsServiceImpl userDetailsService;
 
+    @Autowired
+    private SecurityQuestionDefinitionRepository securityQuestionDefinitionRepository;
+
+    @Autowired
+    private SecurityQuestionRepository securityQuestionRepository;
+
     @RequestMapping(value = "signup")
     public ModelAndView registrationForm() {
-        return new ModelAndView("registrationPage", "user", new User());
+
+        Map<String, Object> model = new HashMap<>();
+        model.put("user", new User());
+        model.put("questions", securityQuestionDefinitionRepository.findAll());
+
+        ModelAndView modelAndView = new ModelAndView("registrationPage", model);
+        return modelAndView;
     }
 
     /**
@@ -59,19 +69,20 @@ public class RegistrationController {
      */
 
     @RequestMapping(value = "user/register")
-    public ModelAndView regiterUser(@Valid final User user, final BindingResult result, final HttpServletRequest request) {
+    public ModelAndView regiterUser(@Valid final User user, @RequestParam Long questionId, @RequestParam String answer, final BindingResult result, final HttpServletRequest request) {
         if (result.hasErrors()) {
             return new ModelAndView("registrationPage", "user", user);
         }
         try {
-
             String encodedPass = this.util.encode(user.getPassword());
             user.setPassword(encodedPass);
             user.setPasswordConfirmation(this.util.encode(user.getPasswordConfirmation()));
 
-            System.out.println("User password -> " + user.getPassword());
-
             User registeredUser = userService.registerNewUser(user);
+
+            Optional<SecurityQuestionDefinition> questionDefinition = securityQuestionDefinitionRepository.findById(questionId);
+            securityQuestionRepository.save(new SecurityQuestion(user, questionDefinition, answer));
+
             final String appUrl = "http://" + request.getServerName() + ":" + request.getServerPort() + request.getContextPath();
             eventPublisher.publishEvent(new OnRegistrationCompleteEvent(appUrl, registeredUser));
 
@@ -149,14 +160,28 @@ public class RegistrationController {
 
     @ResponseBody
     @RequestMapping(value = "/user/savePassword", method = RequestMethod.POST)
-    public ModelAndView savePassword(@RequestParam("password") String password, @RequestParam("passwordConfirmation") String passwordConfirmation, RedirectAttributes redirectAttributes) {
+    public ModelAndView savePassword(@RequestParam("password") String password,
+                                     @RequestParam("passwordConfirmation") String passwordConfirmation,
+                                     @RequestParam Long questionId,
+                                     @RequestParam String answer,
+                                     RedirectAttributes redirectAttributes) {
+
         if(!password.equals(passwordConfirmation)) {
-            return new ModelAndView("resetPassword", ImmutableMap.of("errorMessage", "Passwords do not match"));
+            Map<String, Object> model = new HashMap<>();
+            model.put("errorMessage", "Passwords do not match");
+            model.put("questions", securityQuestionDefinitionRepository.findAll());
+            return new ModelAndView("resetPassword", model);
         }
+
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if(securityQuestionRepository.findByQuestionDefinitionIdAndUserIdAndAnswer(questionId, user.getId(), answer) == null) {
+            Map<String, Object> model = new HashMap<>();
+            model.put("errorMessage", "Answer to security question is incorrect");
+            model.put("questions", securityQuestionDefinitionRepository.findAll());
+            return new ModelAndView("resetPassword", model);
+        }
 
         String encodedPassword = this.util.encode(password);
-
         userService.changeUserPassword(user, encodedPassword);
         redirectAttributes.addFlashAttribute("message", "Password reset successfully");
         return new ModelAndView("redirect:/login");
