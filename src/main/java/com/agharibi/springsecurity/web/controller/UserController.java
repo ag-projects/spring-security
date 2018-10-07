@@ -3,9 +3,11 @@ package com.agharibi.springsecurity.web.controller;
 
 import com.agharibi.springsecurity.model.User;
 import com.agharibi.springsecurity.persistence.UserRepository;
+import com.agharibi.springsecurity.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,15 +18,14 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import javax.validation.Valid;
 
 @Controller
-@RequestMapping("/")
+@RequestMapping("/user")
 public class UserController {
 
-    private final UserRepository userRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
-    public UserController(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
+    private UserService userService;
 
     @RequestMapping
     public ModelAndView list() {
@@ -37,29 +38,24 @@ public class UserController {
         return new ModelAndView("users/view", "user", user);
     }
 
-    @RequestMapping(params = "form", method = RequestMethod.GET)
-    public String createForm(@ModelAttribute User user) {
-        return "users/form";
-    }
-
     @RequestMapping(method = RequestMethod.POST)
     public ModelAndView create(@Valid User user, BindingResult result, RedirectAttributes redirect) {
         if (result.hasErrors()) {
             return new ModelAndView("users/form", "formErrors", result.getAllErrors());
         }
-        user = this.userRepository.save(user);
+        try {
+            user = this.userService.registerNewUser(user);
+        } catch (Exception e) {
+            result.addError(new FieldError("user", "email", e.getMessage()));
+            return new ModelAndView("users/form", "user", user);
+        }
         redirect.addFlashAttribute("globalMessage", "Successfully created a new user");
         return new ModelAndView("redirect:/{user.id}", "user.id", user.getId());
     }
 
-    @RequestMapping("foo")
-    public String foo() {
-        throw new RuntimeException("Expected exception in controller");
-    }
-
     @RequestMapping(value = "delete/{id}")
     public ModelAndView delete(@PathVariable("id") final Long id) {
-        // this.userRepository.delete(id);
+        this.userRepository.deleteById(id);
         return new ModelAndView("redirect:/");
     }
 
@@ -68,4 +64,8 @@ public class UserController {
         return new ModelAndView("users/form", "user", user);
     }
 
+    @RequestMapping(params = "form", method = RequestMethod.GET)
+    public String createForm(@ModelAttribute User user) {
+        return "users/form";
+    }
 }

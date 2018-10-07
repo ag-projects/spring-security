@@ -14,7 +14,7 @@ public class SpringsecurityApplication {
 
 
 	public static void main(String[] args) {
-		SpringApplication.run(new Class[]{SpringsecurityApplication.class, SecurityConfig.class}, args);
+		SpringApplication.run(new Class[]{SpringsecurityApplication.class, SecurityConfig.class, AppWebMvcConfiguration.class}, args);
 
 	}
 }
