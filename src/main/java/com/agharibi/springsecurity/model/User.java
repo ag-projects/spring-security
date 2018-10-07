@@ -1,5 +1,6 @@
 package com.agharibi.springsecurity.model;
 
+import com.agharibi.springsecurity.utils.ValidPassword;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.persistence.*;
@@ -17,6 +18,7 @@ public class User {
     @NotEmpty(message = "Email is required")
     private String email;
 
+    @ValidPassword
     @NotEmpty(message = "Password is required.")
     private String password;
 

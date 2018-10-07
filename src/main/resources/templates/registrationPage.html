@@ -6,6 +6,8 @@
     <title>Registration Page</title>
 
     <link type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" />
+    <script src="/js/jquery-1.7.2.js"></script>
+    <script src="/js/pwstrength.js"></script>
 
 </head>
 <body>
@@ -55,5 +57,30 @@
         </div>
     </form>
 </div>
+<script type="text/javascript">
+    $(document)
+        .ready(
+            function() {
+                options = {
+                    common : {
+                        minChar : 8
+                    },
+                    ui : {
+                        showVerdictsInsideProgressBar : true,
+                        showErrors : true,
+                        errorMessages : {
+                            wordLength : 'Your password is too short',
+                            wordNotEmail : 'Do not use your email as your password',
+                            wordSequences : 'Your password contains sequences',
+                            wordLowercase : 'Use lower case characters',
+                            wordUppercase : 'Use upper case characters',
+                            wordOneNumber : 'Use numbers',
+                            wordOneSpecialChar : 'Use special characters: [~!@#$%^&amp;*,_?]'
+                        }
+                    }
+                };
+                $('#password').pwstrength(options);
+            });
+</script>
 </body>
 </html>
