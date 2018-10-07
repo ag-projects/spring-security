@@ -1,5 +1,6 @@
 package com.agharibi.springsecurity.service;
 
+import com.agharibi.springsecurity.model.PasswordResetToken;
 import com.agharibi.springsecurity.model.User;
 import com.agharibi.springsecurity.model.VerificationToken;
 
@@ -34,4 +35,21 @@ public interface UserService {
      */
     void saveRegisteredUser(User user);
 
+    /**
+     * @param user
+     * @param token
+     */
+    void createPasswordResetTokenForUser(User user, String token);
+
+    /**
+     * @param token
+     * @return
+     */
+    PasswordResetToken getPasswordResetToken(String token);
+
+    /**
+     * @param user
+     * @param password
+     */
+    void changeUserPassword(User user, String password);
 }

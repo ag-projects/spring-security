@@ -45,7 +45,7 @@ public class RegistrationListener implements ApplicationListener<OnRegistrationC
         email.setTo(recipientAddress);
         email.setSubject(subject);
         email.setText("Please open the following URL to verify your account: \r\n" + confirmationUrl);
-        email.setFrom("userName@yahoo.com");
+        email.setFrom("user@email.com");
 
         return email;
     }

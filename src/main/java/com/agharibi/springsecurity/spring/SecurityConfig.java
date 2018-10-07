@@ -32,7 +32,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .hasAuthority("ADMIN");
 
         http.authorizeRequests()
-                .antMatchers("/signup", "/user/register", "/registrationConfirm*").permitAll()
+                .antMatchers(
+                        "/signup",
+                        "/user/register",
+                        "/registrationConfirm*",
+                        "/badUser*",
+                        "/forgotPassword*",
+                        "/user/resetPassword*",
+                        "/user/changePassword*",
+                        "/user/savePassword*").permitAll()
                 .anyRequest().authenticated()
 
                 .and()

@@ -1,24 +1,35 @@
 package com.agharibi.springsecurity.web.controller;
 
+import com.agharibi.springsecurity.model.PasswordResetToken;
 import com.agharibi.springsecurity.model.User;
 import com.agharibi.springsecurity.model.VerificationToken;
 import com.agharibi.springsecurity.registration.OnRegistrationCompleteEvent;
+import com.agharibi.springsecurity.security.UserDetailsServiceImpl;
 import com.agharibi.springsecurity.service.UserService;
 import com.agharibi.springsecurity.utils.PasswordEncoderUtil;
+import com.google.common.collect.ImmutableMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.Calendar;
+import java.util.UUID;
 
 @Controller
 public class RegistrationController {
@@ -32,10 +43,20 @@ public class RegistrationController {
     @Autowired
     private PasswordEncoderUtil util;
 
+    @Autowired
+    private JavaMailSender mailSender;
+
+    @Autowired
+    private UserDetailsServiceImpl userDetailsService;
+
     @RequestMapping(value = "signup")
     public ModelAndView registrationForm() {
         return new ModelAndView("registrationPage", "user", new User());
     }
+
+    /**
+     * register user
+     */
 
     @RequestMapping(value = "user/register")
     public ModelAndView regiterUser(@Valid final User user, final BindingResult result, final HttpServletRequest request) {
@@ -82,10 +103,74 @@ public class RegistrationController {
         return new ModelAndView("redirect:/login");
     }
 
-    @RequestMapping(value = "/confirm")
-    public ModelAndView confirm() {
-        System.out.println("Testing");
-        return new ModelAndView();
+    /**
+     *  password reset
+     */
+
+    @ResponseBody
+    @RequestMapping(value = "/user/resetPassword", method = RequestMethod.POST)
+    public ModelAndView resetPassword(HttpServletRequest request, @RequestParam("email") String userEamil, RedirectAttributes redirectAttributes) {
+        User user = userService.findUserByEmail(userEamil);
+        if(user != null) {
+            String token = UUID.randomUUID().toString();
+            userService.createPasswordResetTokenForUser(user, token);
+            String appUrl = "http://" + request.getServerName() + ":" + request.getServerPort() + request.getContextPath();
+            SimpleMailMessage email = constructResetTokenEmail(appUrl, token, user);
+            mailSender.send(email);
+        }
+        redirectAttributes.addFlashAttribute("message", "You should receive an Password Reset Email shortly");
+        return new ModelAndView("redirect:/login");
+    }
+
+    @RequestMapping(value = "/user/changePassword", method = RequestMethod.GET)
+    public ModelAndView showChangePasswordPage(@RequestParam("id") long id, @RequestParam("token") String token, RedirectAttributes redirectAttributes) {
+        PasswordResetToken passToken = userService.getPasswordResetToken(token);
+        if(passToken == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Invalid password reset token");
+            return new ModelAndView("redirect:/login");
+        }
+        User user = passToken.getUser();
+        if(user.getId() != id) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Invalid password reset token");
+            return new ModelAndView("redirect:/login");
+        }
+
+        Calendar cal = Calendar.getInstance();
+        if ((passToken.getExpiryDate().getTime() - cal.getTime().getTime()) <= 0) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Your password reset token has expired");
+            return new ModelAndView("redirect:/login");
+        }
+        Authentication auth = new UsernamePasswordAuthenticationToken(user, null,
+                userDetailsService.loadUserByUsername(user.getEmail()).getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
+        return new ModelAndView("resetPassword");
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/user/savePassword", method = RequestMethod.POST)
+    public ModelAndView savePassword(@RequestParam("password") String password, @RequestParam("passwordConfirmation") String passwordConfirmation, RedirectAttributes redirectAttributes) {
+        if(!password.equals(passwordConfirmation)) {
+            return new ModelAndView("resetPassword", ImmutableMap.of("errorMessage", "Passwords do not match"));
+        }
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        String encodedPassword = this.util.encode(password);
+
+        userService.changeUserPassword(user, encodedPassword);
+        redirectAttributes.addFlashAttribute("message", "Password reset successfully");
+        return new ModelAndView("redirect:/login");
+    }
+
+    private SimpleMailMessage constructResetTokenEmail(String contextPath, String token, User user) {
+        final String url = contextPath + "/user/changePassword?id=" + user.getId() + "&token=" + token;
+        SimpleMailMessage email = new SimpleMailMessage();
+        email.setTo(user.getEmail());
+        email.setSubject("Reset Password");
+        email.setText("Please open the following URL to reset your password: \r\n" + url);
+        email.setFrom("user@email.com");
+
+        return email;
     }
 
 
