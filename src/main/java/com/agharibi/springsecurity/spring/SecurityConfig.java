@@ -55,6 +55,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
                 .and()
                     .csrf().disable();
+
+        http
+                .rememberMe()
+                .tokenValiditySeconds(604800)  // a week
+                .key("MyAppKey")
+//                .useSecureCookie(true);
+                .rememberMeCookieName("sticky-cookie")
+                .rememberMeParameter("remember");
     }
 
 }
