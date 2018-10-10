@@ -7,6 +7,7 @@ import com.agharibi.springsecurity.persistence.PasswordResetTokenRepository;
 import com.agharibi.springsecurity.persistence.UserRepository;
 import com.agharibi.springsecurity.persistence.VerificationTokenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -14,6 +15,9 @@ import javax.transaction.Transactional;
 @Service
 @Transactional
 public class UserServiceImpl implements UserService {
+
+    @Autowired
+    private PasswordEncoder encoder;
 
     @Autowired
     private UserRepository userRepository;
@@ -34,6 +38,7 @@ public class UserServiceImpl implements UserService {
         if (emailExist(user.getEmail())) {
             throw new IllegalArgumentException("There is an account with that email address: " + user.getEmail());
         }
+        user.setPassword(encoder.encode(user.getPassword()));
         return userRepository.save(user);
     }
 
@@ -66,7 +71,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void changeUserPassword(User user, String password) {
-        user.setPassword(password);
+        user.setPassword(encoder.encode(user.getPassword()));
         userRepository.save(user);
     }
 
