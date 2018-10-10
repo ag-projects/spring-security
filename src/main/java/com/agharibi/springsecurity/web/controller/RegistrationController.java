@@ -6,7 +6,6 @@ import com.agharibi.springsecurity.persistence.SecurityQuestionRepository;
 import com.agharibi.springsecurity.registration.OnRegistrationCompleteEvent;
 import com.agharibi.springsecurity.security.UserDetailsServiceImpl;
 import com.agharibi.springsecurity.service.UserService;
-import com.agharibi.springsecurity.utils.PasswordEncoderUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.mail.SimpleMailMessage;
@@ -37,9 +36,6 @@ public class RegistrationController {
 
     @Autowired
     private UserService userService;
-
-    @Autowired
-    private PasswordEncoderUtil util;
 
     @Autowired
     private JavaMailSender mailSender;
@@ -74,12 +70,7 @@ public class RegistrationController {
             return new ModelAndView("registrationPage", "user", user);
         }
         try {
-            String encodedPass = this.util.encode(user.getPassword());
-            user.setPassword(encodedPass);
-            user.setPasswordConfirmation(this.util.encode(user.getPasswordConfirmation()));
-
             User registeredUser = userService.registerNewUser(user);
-
             Optional<SecurityQuestionDefinition> questionDefinition = securityQuestionDefinitionRepository.findById(questionId);
             securityQuestionRepository.save(new SecurityQuestion(user, questionDefinition, answer));
 
@@ -181,8 +172,7 @@ public class RegistrationController {
             return new ModelAndView("resetPassword", model);
         }
 
-        String encodedPassword = this.util.encode(password);
-        userService.changeUserPassword(user, encodedPassword);
+        userService.changeUserPassword(user, password);
         redirectAttributes.addFlashAttribute("message", "Password reset successfully");
         return new ModelAndView("redirect:/login");
     }

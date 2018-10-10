@@ -1,5 +1,7 @@
 package com.agharibi.springsecurity.spring;
 
+import com.agharibi.springsecurity.model.User;
+import com.agharibi.springsecurity.persistence.UserRepository;
 import com.agharibi.springsecurity.security.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -7,14 +9,20 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.crypto.password.StandardPasswordEncoder;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
+import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private DataSource dataSource;
@@ -28,7 +36,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userDetailsService);
+        auth.userDetailsService(userDetailsService).passwordEncoder(encoder());
     }
 
 
@@ -64,14 +72,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                     .csrf().disable();
 
-//        http
-//                .rememberMe()
-//                .tokenValiditySeconds(604800)  // a week
-//                .key("MyAppKey")
-////                .useSecureCookie(true);
-//                .rememberMeCookieName("sticky-cookie")
-//                .rememberMeParameter("remember");
-
         http
                 .rememberMe()
                 .tokenRepository(persistentTokenRepository());
@@ -82,6 +82,21 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         JdbcTokenRepositoryImpl jdbcTokenRepository = new JdbcTokenRepositoryImpl();
         jdbcTokenRepository.setDataSource(dataSource);
         return jdbcTokenRepository;
+    }
+
+    @PostConstruct
+    private void saveTestUser() {
+        User user = new User();
+        user.setEmail("user@yahoo.com");
+        user.setPassword(encoder().encode("Secured123!"));
+        user.setEnabled(true);
+
+        userRepository.save(user);
+    }
+
+    @Bean
+    public PasswordEncoder encoder() {
+        return new StandardPasswordEncoder();
     }
 
 }
