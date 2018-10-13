@@ -52,4 +52,9 @@ public interface UserService {
      * @param password
      */
     void changeUserPassword(User user, String password);
+
+    /**
+     * @return
+     */
+    Iterable<User> findAll();
 }

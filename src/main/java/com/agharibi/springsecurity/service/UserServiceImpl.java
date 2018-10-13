@@ -28,6 +28,9 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private PasswordResetTokenRepository passwordTokenRepository;
 
+    @Autowired
+    private AsyncBean asyncBean;
+
     @Override
     public User findUserByEmail(String email) {
         return userRepository.findByEmail(email);
@@ -73,6 +76,12 @@ public class UserServiceImpl implements UserService {
     public void changeUserPassword(User user, String password) {
         user.setPassword(encoder.encode(user.getPassword()));
         userRepository.save(user);
+    }
+
+    @Override
+    public Iterable<User> findAll() {
+        asyncBean.asyncCall();
+        return userRepository.findAll();
     }
 
     private boolean emailExist(String email) {

@@ -2,9 +2,11 @@ package com.agharibi.springsecurity.spring;
 
 import com.agharibi.springsecurity.model.User;
 import com.agharibi.springsecurity.persistence.UserRepository;
+import com.agharibi.springsecurity.security.LoggingFilter;
 import com.agharibi.springsecurity.security.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.security.access.intercept.RunAsImplAuthenticationProvider;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -14,6 +16,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -23,6 +26,7 @@ import javax.annotation.PreDestroy;
 import javax.sql.DataSource;
 
 @EnableWebSecurity
+@EnableAsync
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
@@ -33,6 +37,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private UserDetailsServiceImpl userDetailsService;
+
+    @Autowired
+    private LoggingFilter loggingFilter;
 
     public SecurityConfig() {
         super();
@@ -46,6 +53,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+
+        // adding custom filter to the chain of spring security existing filters
+        http.addFilterBefore(loggingFilter, AnonymousAuthenticationFilter.class);
 
         http.authorizeRequests()
                 .antMatchers("/delete/**")
