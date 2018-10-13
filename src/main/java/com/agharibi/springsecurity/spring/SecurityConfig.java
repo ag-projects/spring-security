@@ -16,7 +16,9 @@ import org.springframework.security.web.authentication.rememberme.PersistentToke
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.sql.DataSource;
+import java.util.List;
 
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
@@ -92,6 +94,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         user.setEnabled(true);
 
         userRepository.save(user);
+    }
+
+    @PreDestroy
+    private void deleteTestUser() {
+        userRepository.deleteAll();
     }
 
     @Bean

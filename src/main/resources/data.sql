@@ -8,4 +8,10 @@ insert into security_question_definition (id, text) values (6, 'Who was your chi
 -- Test User
 insert into User (id, email, password, enabled, created) values (99, 'test@email.com', '{noop}pass', true, '2018-10-06 00:00:00');
 
+-- Persistent Login
+create table persistent_logins (
+  username varchar(64) not null,
+  series varchar(64) primary key,
+  token varchar(64) not null,
+  last_used timestamp not null);
 
