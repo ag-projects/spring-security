@@ -15,10 +15,18 @@
                 <li><a class="brand" th:href="@{/}"> Home </a></li>
             </ul>
             <ul class="nav pull-right">
+                <li>Current user authorities: <span sec:authentication="principal.authorities">user</span><br/></li>
                 <li><a th:href="@{/doLogout}" class="menu-right"> Logout </a></li>
             </ul>
         </div>
     </div>
+    <div>
+        <br/>
+        <span id="temp"></span>
+        <br/>
+        <a href="#" onclick="tryRunAs()">Generate Report As Super User</a>
+    </div>
+
     <h1 layout:fragment="header">Users : View all</h1>
     <div layout:fragment="content" class="container">
         <div class="pull-right">
@@ -42,6 +50,16 @@
             </tbody>
         </table>
     </div>
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <script type="text/javascript">
+
+        function tryRunAs(){
+            $.get( "/runas" , function( data ) {
+                $("#temp").html(data);
+            });
+        }
+    </script>
 </div>
 </body>
 </html>
