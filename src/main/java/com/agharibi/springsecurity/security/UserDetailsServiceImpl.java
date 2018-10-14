@@ -1,8 +1,8 @@
 package com.agharibi.springsecurity.security;
 
+import com.agharibi.springsecurity.model.Role;
 import com.agharibi.springsecurity.model.User;
 import com.agharibi.springsecurity.persistence.UserRepository;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -12,14 +12,12 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
 public class UserDetailsServiceImpl implements UserDetailsService {
-
-    private static final String ROLE_USER = "ROLE_USER";
 
     @Autowired
     private UserRepository userRepository;
@@ -35,12 +33,13 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         return new org.springframework.security.core.userdetails.User(
                 user.getEmail(), user.getPassword(), user.getEnabled(),
                 true, true,
-                true, getAuthorities(ROLE_USER));
+                true, getAuthorities(user.getRoles()));
     }
 
-    private Collection<? extends GrantedAuthority> getAuthorities(String roleUser) {
-        return Arrays.asList(new SimpleGrantedAuthority(roleUser));
+    private Collection<? extends GrantedAuthority> getAuthorities(Collection<Role> roles) {
+        return roles.stream()
+                .flatMap(role -> role.getPrivileges().stream())
+                .map(privilege -> new SimpleGrantedAuthority(privilege.getName()))
+                .collect(Collectors.toList());
     }
-
-
 }

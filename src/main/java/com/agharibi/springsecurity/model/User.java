@@ -6,6 +6,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import java.util.Calendar;
+import java.util.Collection;
 
 @Entity
 public class User {
@@ -30,6 +31,12 @@ public class User {
     private Boolean enabled;
 
     private Calendar created = Calendar.getInstance();
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "users_roles",
+            joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))
+    private Collection<Role> roles;
 
     public User() {
         super();
@@ -88,13 +95,11 @@ public class User {
         this.created = created;
     }
 
-    @Override
-    public int hashCode() {
-        return super.hashCode();
+    public Collection<Role> getRoles() {
+        return roles;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        return super.equals(obj);
+    public void setRoles(Collection<Role> roles) {
+        this.roles = roles;
     }
 }

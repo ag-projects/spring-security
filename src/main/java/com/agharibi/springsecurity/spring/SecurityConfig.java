@@ -58,13 +58,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 //                .and()
 //                .withUser("admin").password("pass").roles("ADMIN");
 
-        auth.jdbcAuthentication()
-                .dataSource(dataSource)
-                .withUser("user").password(encoder().encode("Secured123!")).roles("USER")
-                .and()
-                .withUser("admin").password(encoder().encode("Secured123!")).roles("ADMIN");
+//        auth.jdbcAuthentication()
+//                .dataSource(dataSource)
+//                .withUser("user").password(encoder().encode("Secured123!")).roles("USER")
+//                .and()
+//                .withUser("admin").password(encoder().encode("Secured123!")).roles("ADMIN");
 
-        // auth.userDetailsService(userDetailsService);
+         auth.userDetailsService(userDetailsService);
     }
 
     @Override
@@ -143,19 +143,19 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         return daoAuthenticationProvider;
     }
 
-    @PostConstruct
-    private void saveTestUser() {
-        User user = new User();
-        user.setEmail("user@yahoo.com");
-        user.setPassword(encoder().encode("Secured123!"));
-        user.setEnabled(true);
-
-        userRepository.save(user);
-    }
-
-    @PreDestroy
-    private void deleteTestUser() {
-        userRepository.deleteAll();
-    }
+//    @PostConstruct
+//    private void saveTestUser() {
+//        User user = new User();
+//        user.setEmail("test@email.com");
+//        user.setPassword(encoder().encode("Secured123!"));
+//        user.setEnabled(true);
+//
+//        userRepository.save(user);
+//    }
+//
+//    @PreDestroy
+//    private void deleteTestUser() {
+//        userRepository.deleteAll();
+//    }
 
 }
