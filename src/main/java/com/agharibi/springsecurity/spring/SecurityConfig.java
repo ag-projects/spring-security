@@ -1,24 +1,34 @@
 package com.agharibi.springsecurity.spring;
 
+import com.agharibi.springsecurity.LockedUsers;
 import com.agharibi.springsecurity.model.User;
 import com.agharibi.springsecurity.persistence.UserRepository;
 import com.agharibi.springsecurity.security.CustomAuthenticationProvider;
 import com.agharibi.springsecurity.security.LoggingFilter;
 import com.agharibi.springsecurity.security.UserDetailsServiceImpl;
+import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.security.access.AccessDecisionManager;
+import org.springframework.security.access.AccessDecisionVoter;
+import org.springframework.security.access.ConfigAttribute;
 import org.springframework.security.access.intercept.RunAsImplAuthenticationProvider;
+import org.springframework.security.access.vote.AuthenticatedVoter;
+import org.springframework.security.access.vote.RoleVoter;
+import org.springframework.security.access.vote.UnanimousBased;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.access.expression.WebExpressionVoter;
 import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
@@ -27,6 +37,9 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.sql.DataSource;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 @EnableWebSecurity
 @EnableAsync
@@ -49,6 +62,31 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     public SecurityConfig() {
         super();
+    }
+
+    @PostConstruct
+    private void saveTestUser() {
+
+        List<User> users = new ArrayList<>();
+
+        User user = new User();
+        user.setEmail("test@email.com");
+        user.setPassword(encoder().encode("Secured123!"));
+        user.setEnabled(true);
+        users.add(user);
+
+        User admin = new User();
+        admin.setEmail("admin@email.com");
+        admin.setPassword(encoder().encode("Secured123!"));
+        admin.setEnabled(true);
+        users.add(admin);
+
+        userRepository.saveAll(users);
+    }
+
+    @PreDestroy
+    private void deleteTestUser() {
+        userRepository.deleteAll();
     }
 
     @Autowired
@@ -89,6 +127,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         "/user/savePassword*",
                         "/js/**").permitAll()
                 .anyRequest().authenticated()
+                .accessDecisionManager(unanimous())
+                .antMatchers("/secured").access("hasRole('ADMIN')")
 
                 .and()
                 .formLogin()
@@ -143,19 +183,36 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         return daoAuthenticationProvider;
     }
 
-    @PostConstruct
-    private void saveTestUser() {
-        User user = new User();
-        user.setEmail("test@email.com");
-        user.setPassword(encoder().encode("Secured123!"));
-        user.setEnabled(true);
+    @Bean
+    public AccessDecisionManager unanimous() {
+        List<AccessDecisionVoter<? extends Object>> decisionVoters = Lists.newArrayList(
+                                                                                new RoleVoter(),
+                                                                                new AuthenticatedVoter(),
+                                                                                new WebExpressionVoter(),
+                                                                                new RealTimeLockVoter());
 
-        userRepository.save(user);
+        return new UnanimousBased(decisionVoters);
     }
 
-    @PreDestroy
-    private void deleteTestUser() {
-        userRepository.deleteAll();
+    class RealTimeLockVoter implements AccessDecisionVoter<Object> {
+
+        @Override
+        public boolean supports(ConfigAttribute attribute) {
+            return true;
+        }
+
+        @Override
+        public boolean supports(Class<?> clazz) {
+            return true;
+        }
+
+        @Override
+        public int vote(Authentication authentication, Object object, Collection<ConfigAttribute> attributes) {
+            if(LockedUsers.isLocked(authentication.getName())) {
+                return ACCESS_DENIED;
+            }
+            return ACCESS_GRANTED;
+        }
     }
 
 }
