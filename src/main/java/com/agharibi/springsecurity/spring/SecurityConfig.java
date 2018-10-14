@@ -5,13 +5,11 @@ import com.agharibi.springsecurity.persistence.UserRepository;
 import com.agharibi.springsecurity.security.CustomAuthenticationProvider;
 import com.agharibi.springsecurity.security.LoggingFilter;
 import com.agharibi.springsecurity.security.UserDetailsServiceImpl;
-import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.security.access.intercept.RunAsImplAuthenticationProvider;
 import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -60,13 +58,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 //                .and()
 //                .withUser("admin").password("pass").roles("ADMIN");
 
-//        auth.jdbcAuthentication()
-//                .dataSource(dataSource)
-//                .withUser("user").password(encoder().encode("Secured123!")).roles("USER")
-//                .and()
-//                .withUser("admin").password(encoder().encode("Secured123!")).roles("ADMIN");
+        auth.jdbcAuthentication()
+                .dataSource(dataSource)
+                .withUser("user").password(encoder().encode("Secured123!")).roles("USER")
+                .and()
+                .withUser("admin").password(encoder().encode("Secured123!")).roles("ADMIN");
 
-        auth.userDetailsService(userDetailsService);
+        // auth.userDetailsService(userDetailsService);
     }
 
     @Override

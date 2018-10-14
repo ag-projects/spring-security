@@ -6,6 +6,7 @@ import com.agharibi.springsecurity.persistence.UserRepository;
 import com.agharibi.springsecurity.security.ActiveUserService;
 import com.agharibi.springsecurity.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -71,6 +72,7 @@ public class UserController {
         return new ModelAndView("users/form", "user", user);
     }
 
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
     @RequestMapping(params = "form", method = RequestMethod.GET)
     public String createForm(@ModelAttribute User user) {
         return "users/form";
