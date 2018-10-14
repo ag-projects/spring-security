@@ -143,19 +143,19 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         return daoAuthenticationProvider;
     }
 
-//    @PostConstruct
-//    private void saveTestUser() {
-//        User user = new User();
-//        user.setEmail("test@email.com");
-//        user.setPassword(encoder().encode("Secured123!"));
-//        user.setEnabled(true);
-//
-//        userRepository.save(user);
-//    }
-//
-//    @PreDestroy
-//    private void deleteTestUser() {
-//        userRepository.deleteAll();
-//    }
+    @PostConstruct
+    private void saveTestUser() {
+        User user = new User();
+        user.setEmail("test@email.com");
+        user.setPassword(encoder().encode("Secured123!"));
+        user.setEnabled(true);
+
+        userRepository.save(user);
+    }
+
+    @PreDestroy
+    private void deleteTestUser() {
+        userRepository.deleteAll();
+    }
 
 }
