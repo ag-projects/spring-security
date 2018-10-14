@@ -17,6 +17,8 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
@@ -58,11 +60,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 //                .and()
 //                .withUser("admin").password("pass").roles("ADMIN");
 
-        auth.jdbcAuthentication()
-                .dataSource(dataSource)
-                .withUser("user").password(encoder().encode("Secured123!")).roles("USER")
-                .and()
-                .withUser("admin").password(encoder().encode("Secured123!")).roles("ADMIN");
+//        auth.jdbcAuthentication()
+//                .dataSource(dataSource)
+//                .withUser("user").password(encoder().encode("Secured123!")).roles("USER")
+//                .and()
+//                .withUser("admin").password(encoder().encode("Secured123!")).roles("ADMIN");
+
+        auth.userDetailsService(userDetailsService);
     }
 
     @Override
@@ -98,11 +102,20 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .logoutRequestMatcher(new AntPathRequestMatcher("/doLogout", "GET"))
 
                 .and()
-                    .csrf().disable();
+                    .sessionManagement().maximumSessions(1)
+                    .sessionRegistry(sessionRegistry()).and().sessionFixation().none()
 
-        http
-                .rememberMe()
-                .tokenRepository(persistentTokenRepository());
+                .and()
+                    .csrf().disable();
+//
+//        http
+//                .rememberMe()
+//                .tokenRepository(persistentTokenRepository());
+    }
+
+    @Bean
+    public SessionRegistry sessionRegistry() {
+        return new SessionRegistryImpl();
     }
 
     @Bean

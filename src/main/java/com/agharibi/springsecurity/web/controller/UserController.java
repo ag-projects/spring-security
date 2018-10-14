@@ -3,6 +3,7 @@ package com.agharibi.springsecurity.web.controller;
 
 import com.agharibi.springsecurity.model.User;
 import com.agharibi.springsecurity.persistence.UserRepository;
+import com.agharibi.springsecurity.security.ActiveUserService;
 import com.agharibi.springsecurity.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -16,6 +17,8 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.validation.Valid;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/user")
@@ -27,9 +30,13 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private ActiveUserService activeUserService;
+
     @RequestMapping
     public ModelAndView list() {
-        Iterable<User> users = this.userService.findAll();
+        List<String> activeUsers = activeUserService.getAllActiveUsers();
+        Iterable<User> users = activeUsers.stream().map(s -> new User(s)).collect(Collectors.toList());
         return new ModelAndView("users/list", "users", users);
     }
 

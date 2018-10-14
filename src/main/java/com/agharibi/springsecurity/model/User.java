@@ -36,6 +36,10 @@ public class User {
         this.enabled = false;
     }
 
+    public User(String userName) {
+        this.email = userName;
+    }
+
     public Long getId() {
         return id;
     }
