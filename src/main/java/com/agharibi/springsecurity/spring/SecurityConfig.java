@@ -5,11 +5,13 @@ import com.agharibi.springsecurity.persistence.UserRepository;
 import com.agharibi.springsecurity.security.CustomAuthenticationProvider;
 import com.agharibi.springsecurity.security.LoggingFilter;
 import com.agharibi.springsecurity.security.UserDetailsServiceImpl;
+import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.security.access.intercept.RunAsImplAuthenticationProvider;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -51,8 +53,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-//        auth.userDetailsService(userDetailsService);
-        auth.authenticationProvider(customAuthenticationProvider);
+//        DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
+//        daoAuthenticationProvider.setUserDetailsService(userDetailsService);;
+//        auth
+//                .authenticationProvider(customAuthenticationProvider)
+//                .authenticationProvider(daoAuthenticationProvider);
+
+        ProviderManager authenticationManager = new ProviderManager(Lists.newArrayList(customAuthenticationProvider));
+        authenticationManager.setEraseCredentialsAfterAuthentication(Boolean.FALSE);
+        auth.parentAuthenticationManager(authenticationManager);
     }
 
     @Override
