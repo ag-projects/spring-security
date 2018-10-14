@@ -53,15 +53,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-//        DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
-//        daoAuthenticationProvider.setUserDetailsService(userDetailsService);;
-//        auth
-//                .authenticationProvider(customAuthenticationProvider)
-//                .authenticationProvider(daoAuthenticationProvider);
+//        auth.inMemoryAuthentication()
+//                .withUser("user").password("pass").roles("USER")
+//                .and()
+//                .withUser("admin").password("pass").roles("ADMIN");
 
-        ProviderManager authenticationManager = new ProviderManager(Lists.newArrayList(customAuthenticationProvider));
-        authenticationManager.setEraseCredentialsAfterAuthentication(Boolean.FALSE);
-        auth.parentAuthenticationManager(authenticationManager);
+        auth.jdbcAuthentication()
+                .dataSource(dataSource)
+                .withUser("user").password(encoder().encode("Secured123!")).roles("USER")
+                .and()
+                .withUser("admin").password(encoder().encode("Secured123!")).roles("ADMIN");
     }
 
     @Override
