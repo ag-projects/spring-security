@@ -2,6 +2,7 @@ package com.agharibi.springsecurity.spring;
 
 import com.agharibi.springsecurity.model.User;
 import com.agharibi.springsecurity.persistence.UserRepository;
+import com.agharibi.springsecurity.security.CustomAuthenticationProvider;
 import com.agharibi.springsecurity.security.LoggingFilter;
 import com.agharibi.springsecurity.security.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,14 +42,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private LoggingFilter loggingFilter;
 
+    @Autowired
+    private CustomAuthenticationProvider customAuthenticationProvider;
+
     public SecurityConfig() {
         super();
     }
 
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        auth.authenticationProvider(runAsAuthenticationProvider());
-        auth.authenticationProvider(daoAuthenticationProvider());
+//        auth.userDetailsService(userDetailsService);
+        auth.authenticationProvider(customAuthenticationProvider);
     }
 
     @Override
