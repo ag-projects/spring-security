@@ -70,13 +70,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         List<User> users = new ArrayList<>();
 
         User user = new User();
-        user.setEmail("test@email.com");
+        user.setEmail("armen@email.com");
         user.setPassword(encoder().encode("Secured123!"));
         user.setEnabled(true);
         users.add(user);
 
         User admin = new User();
-        admin.setEmail("admin@email.com");
+        admin.setEmail("eric@email.com");
         admin.setPassword(encoder().encode("Secured123!"));
         admin.setEnabled(true);
         users.add(admin);
