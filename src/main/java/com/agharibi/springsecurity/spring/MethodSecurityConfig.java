@@ -1,5 +1,6 @@
 package com.agharibi.springsecurity.spring;
 
+import com.zaxxer.hikari.HikariDataSource;
 import net.sf.ehcache.CacheManager;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
@@ -7,6 +8,7 @@ import org.springframework.cache.ehcache.EhCacheFactoryBean;
 import org.springframework.cache.ehcache.EhCacheManagerFactoryBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.access.ConfigAttribute;
 import org.springframework.security.access.SecurityConfig;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
@@ -76,10 +78,18 @@ public class MethodSecurityConfig extends GlobalMethodSecurityConfiguration {
         return service;
     }
 
+//    @Primary
+//    @Bean
+//    @ConfigurationProperties(prefix = "spring.datasource")
+//    public DataSource dataSource() {
+//        return DataSourceBuilder.create().build();
+//    }
+
+    @Primary
     @Bean
-    @ConfigurationProperties(prefix = "spring.datasource")
-    public DataSource dataSource() {
-        return DataSourceBuilder.create().build();
+    @ConfigurationProperties("app.datasource")
+    public HikariDataSource dataSource() {
+        return DataSourceBuilder.create().type(HikariDataSource.class).build();
     }
 
     @Bean

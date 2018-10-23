@@ -3,7 +3,7 @@ package com.agharibi.springsecurity.model;
 import javax.persistence.*;
 
 @Entity
-public class Possession {
+public class Possession implements TargetEntity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

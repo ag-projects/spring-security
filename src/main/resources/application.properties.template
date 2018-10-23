@@ -12,8 +12,8 @@ spring.jpa.show-sql=true
 # Persistence
 spring.jpa.properties.javax.persistence.validation.mode=none
 
-app.datasource.username=username
-app.datasource.password=password
+app.datasource.username=*********
+app.datasource.password=*********
 app.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
 app.datasource.jdbc-url=jdbc:mysql://localhost:3306/demoDB?createDatabaseIfNotExist=true&useSSL=false&useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC
 
@@ -27,24 +27,3 @@ spring.mail.protocol=smtp
 spring.mail.test-connection=false
 spring.mail.properties.mail.smtp.auth=true
 spring.mail.properties.mail.smtp.starttls.enable=true
-
-# add to VM options for Async context transfers
-# -Dspring.security.strategy=MODE_INHERITABLETHREADLOCAL
-
-
-# mysql does not work with spring username data type
-# so create the schema and tables manually
-
-#create schema if not exists armenDB2;
-#USE armenDB2;
-#create table users(
-#username varchar(50) not null primary key,
-#password varchar(500) not null,
-#enabled boolean not null
-#);
-#create table authorities (
-#username varchar(50) not null,
-#authority varchar(50) not null,
-#constraint fk_authorities_users foreign key(username) references users(username)
-#);
-#create unique index ix_auth_username on authorities (username,authority);
